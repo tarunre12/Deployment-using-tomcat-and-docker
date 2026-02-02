@@ -1,19 +1,16 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "prasad67/maven-web-app"
-    }
-
     stages {
 
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'main',
+                    url: 'https://github.com/tarunre12/Deployment-using-tomcat-and-docker.git'
             }
         }
 
-        stage('Build WAR') {
+        stage('Build with Maven') {
             steps {
                 sh 'mvn clean package'
             }
@@ -22,29 +19,18 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                  docker build -t $IMAGE_NAME:${BUILD_NUMBER} .
+                  docker build -t charitize .
                 '''
             }
         }
 
-        stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    '''
-                }
-            }
-        }
-
-        stage('Push Image to Docker Hub') {
+        stage('Deploy Docker Container') {
             steps {
                 sh '''
-                  docker push $IMAGE_NAME:${BUILD_NUMBER}
+                  docker stop venu || true
+                  docker rm venu || true
+
+                  docker run -d --name webapp -p 1122:8080 charitize
                 '''
             }
         }
