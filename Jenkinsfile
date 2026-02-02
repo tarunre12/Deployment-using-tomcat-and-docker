@@ -27,8 +27,8 @@ pipeline {
         stage('Deploy Docker Container') {
             steps {
                 sh '''
-                  docker stop venu || true
-                  docker rm venu || true
+                  docker stop container3 || true
+                  docker rm container3 || true
 
                   docker run -d --name webapp -p 1122:8080 charitize
                 '''
